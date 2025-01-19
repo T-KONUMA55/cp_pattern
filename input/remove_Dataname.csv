@@ -1,0 +1,42 @@
+﻿TraitID,DataName
+3106,"Flowering plant height, heighest leaf elongated"
+3106,"Flowering plant height, heighest leaf not elongated"
+3106,height at 15 days
+3106,Height at 20 Years
+3106,height at 23 days
+3106,height at 32 days
+3106,height at 41 days
+3106,height at 78 days
+3106,Height of seedlings
+3106,Maximum height extreme
+3106,Maximum height max
+3106,Maximum height min
+3106,Plant height vegetative max.
+3106,Plant height vegetative min.
+3106,Vegetative plant height elongated
+4,Wood density after drying at 60C
+3109,Leaf lamina dry area
+3115,SLA lamina: petiole and rhachis excluded; shade
+3115,SLA lamina: petiole and rhachis excluded; sun
+3115,Leaf specific area (SLA): petiole excluded  (max)
+3115,Leaf specific area (SLA): petiole excluded (min)
+26,Seed mass
+26,Seed mass max
+26,Seed mass min
+26,Seed mass original value: max
+26,Seed mass original value: mean
+26,Seed mass original value: min
+163,Leaf  lamina (less rhachis) fresh mass
+47,Leaf dry matter content (min)
+47,Leaf dry matter content (max)
+47,Leaf dry matter content (LMDC) lamina less rhachis
+47,LDMC min
+47,LDMC max
+13,C amount at 13C measurement
+13,Leaf senescent carbon content per dry mass
+14,N amount at 15 N measurement
+14,Leaf senescent nitrogen (N) content per dry mass
+14,Leaf nitrogen content per dry mass (shaded leaves)
+15,Leaf senescent phosphorus (P) content per dry mass
+27,Seed Curved Length
+27,Seed Straight Length

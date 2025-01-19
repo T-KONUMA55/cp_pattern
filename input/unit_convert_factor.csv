@@ -1,0 +1,200 @@
+﻿trait,unit,factor
+H,m,1
+H,meter,1
+H,cm,0.01
+H,(cm),0.01
+H,feet,0.3048
+H,mm,0.001
+SSD,g/cm^3,1
+SSD,g/cm3,1
+SSD,g*cm-3,1
+SSD,g cm-3,1
+SSD,g / cm3,1
+SSD,mg/mm3,1
+SSD,mg/mm^3,1
+SSD,mg / mm3,1
+SSD,g_cm3-1,1
+SSD,t m3,1
+SSD,t/m3,1
+SSD,g/dm3,0.001
+SSD,kg/m3,0.001
+SSD,kg m-3,0.001
+SSD,mg/cm3,0.001
+SSD,cm3/mg,inv0.001
+SSD,g /(cm3*10),0.1
+SSD,(g/cm3)*100,0.01
+StDMC,g*g-1,1
+StDMC,mg g-1,0.001
+StDMC,mg/g,0.001
+LA,mm2,1
+LA,mm²,1
+LA,cm2,100
+LA,cm²,100
+LA,(cm2),100
+LA,m2,1000000
+LA,dm2,10000
+LMA,g/m2,1
+LMA,g.m2,1
+LMA,g m-2,1
+LMA,mm2/mg,inv1000
+LMA,mm^2/mg,inv1000
+LMA,mm2 / mg,inv1000
+LMA,m2/kg,inv1000
+LMA,m2 kg-1,inv1000
+LMA,mÂ² kg-1,inv1000
+LMA,mÂ² Kg-1,inv1000
+LMA,mm2·mg-1,inv1000
+LMA,mm2 mg-1,inv1000
+LMA,m² kg-1,inv1000
+LMA,m² Kg-1,inv1000
+LMA,(m² kg-1),inv1000
+LMA,m2kg-1,inv1000
+LMA,cm2/g,inv10000
+LMA,cm2 g-1,inv10000
+LMA,cm²/g,inv10000
+LMA,cm2 / g,inv10000
+LMA,cm2·g-1,inv10000
+LMA,m2/g,inv1
+LMA,g cm-2,10000
+LMA,mg/dm2,0.1
+LMA,mg/cm2,10
+LMA,cm2/mg,inv10
+LMA,cm2mg-1,inv10
+Nmass,mg / g,1
+Nmass,mg g-1,1
+Nmass,mg/g,1
+Nmass,g/kg,1
+Nmass,mg N g-1,1
+Nmass,g kg-1,1
+Nmass,µg mg-1,1
+Nmass,mg/g dry mass,1
+Nmass,mg_g-1,1
+Nmass,mmol/g,14.01
+Nmass,g N g-1 DW,1000
+Nmass,kg/kg,1000
+Nmass,g/g,1000
+Nmass,%,10
+Nmass,percent,10
+Nmass,mg/mg *100,10
+SM,mg,1
+SM,(mg),1
+SM,g / 1000 seeds,1
+SM,g/1000,1
+SM,mg per seed,1
+SM,1/pound,inv453592
+SM,g,1000
+SM,gr,1000
+SM,g ?,1000
+SM,1/kg,inv1000000
+SM,1/g,inv1000
+SM,micro gx10,0.01
+SM,mg/100 seeds,0.01
+SM,mg/100,0.01
+LFM,g,1
+LFM,mg,0.001
+LDMC,g/g,1
+LDMC,g dry mass / g fresh mass,1
+LDMC,g*g-1,1
+LDMC,g g-1,1
+LDMC,mg/mg,1
+LDMC,(g g-1),1
+LDMC,g.g-1,1
+LDMC,g/g/,1
+LDMC,mg g-1,0.001
+LDMC,mg_g-1,0.001
+LDMC,mg/g,0.001
+LDMC,mgg-1,0.001
+LDMC,mg*g-1,0.001
+LDMC,(mg g-1),0.001
+LDMC,mg·g-1,0.001
+LDMC,% of FW,0.01
+LDMC,leaf DM/FM %,0.01
+LDMC,%,0.01
+LDMC,g/g*100,0.01
+LDMC,g(SW)/g(DW),inv1
+LDMC,gH2O / 100 g fresh mass,NaN
+LDMC,gr H2O / FW*100,NaN
+LeafC,g/g,1
+LeafC,g C g-1 DW,1
+LeafC,%,0.01
+LeafC,%DM,0.01
+LeafC,g/100g,0.01
+LeafC,percent,0.01
+LeafC,mg/mg *100,0.01
+LeafC,mg g-1,0.001
+LeafC,g/kg,0.001
+LeafC,mg/g,0.001
+LeafC,(mg g-1),0.001
+LeafC,µg mg-1,0.001
+LeafC,mg/g dry mass,0.001
+LeafC,mmol/g,0.01201
+LeafN,g/g,1
+LeafN,g N g-1 DW,1
+LeafN,kg/kg,1
+LeafN,%,0.01
+LeafN,%DM,0.01
+LeafN,g/100g,0.01
+LeafN,percent,0.01
+LeafN,mg/mg *100,0.01
+LeafN,% mass/mass,0.01
+LeafN,mg g-1,0.001
+LeafN,mg_g-1,0.001
+LeafN,mg / g,0.001
+LeafN,g/kg,0.001
+LeafN,mg/g,0.001
+LeafN,(mg g-1),0.001
+LeafN,mg/g DW,0.001
+LeafN,mg N g-1,0.001
+LeafN,µg mg-1,0.001
+LeafN,mg/g dry mass,0.001
+LeafN,g kg-1,0.001
+LeafN,mmol/g,0.01401
+LeafP,g/g,1
+LeafP,g P g-1 DW,1
+LeafP,kg/kg,1
+LeafP,%,0.01
+LeafP,%DM,0.01
+LeafP,g/100g,0.01
+LeafP,percent,0.01
+LeafP,mg/mg *100,0.01
+LeafP,% mass/mass,0.01
+LeafP,mg g-1,0.001
+LeafP,mg_g-1,0.001
+LeafP,g/kg,0.001
+LeafP,mg/g,0.001
+LeafP,(mg g-1),0.001
+LeafP,mg/g DW,0.001
+LeafP,µg mg-1,0.001
+LeafP,mg/g dry mass,0.001
+LeafP,g kg-1,0.001
+LeafP,mmol/kg,0.00003097
+LeafP,mg kg-1,0.000001
+LeafP,mg/kg,0.000001
+LeafP,ppm,0.000001
+LeafP,micro g(P)/g(DM),0.000001
+LeafP,mg/10g,0.0001
+LNA,g/m2,1
+LNA,g m-2,1
+LNA,g N m-2,1
+LNA,g m2,1
+LNA,gN.m-2,1
+LNA,gN m-2,1
+LNA,g / m2,1
+LNA,gm-2,1
+LNA,mg/cm2,10
+LNA,mg cm-2,10
+LNA,mmol/m2,0.014
+LNA,mmol/m²,0.014
+LNA,mg m-2,0.001
+SL,mm,1
+SL,Cm,10
+SL,cm,10
+LNP,g/g,1
+LNP,nounit,1
+d15N,per mil,1
+d15N,per mill,1
+d15N,nounit,1
+d15N,parts per mil,1
+SCD,mm-2,1
+SCD,1/mm^2,1
+SCD,#/ mm2,1
