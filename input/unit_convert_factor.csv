@@ -193,8 +193,12 @@ LNP,g/g,1
 LNP,nounit,1
 d15N,per mil,1
 d15N,per mill,1
+d15N,(N2),1
+d15N,,1
 d15N,nounit,1
 d15N,parts per mil,1
+d15N,%o,1
 SCD,mm-2,1
 SCD,1/mm^2,1
 SCD,#/ mm2,1
+DL,mm,1

@@ -33,19 +33,34 @@ corrplot(cor(input_glm_rm_gymn %>% select(col_tr)),
                        addcolorlabel = "no", 
                        order = "AOE")
 
+# Remove traits whose correlation coefficient is 0.8 or higher
+col_tr_filtered <- col_tr[col_tr != "DL"]
+
 # Perform Regression Analysis ------------------------------------------------
 
 
 # Get the number of physical cores (ignoring logical/virtual cores)
 detectCores(logical = FALSE)
+dir.create("./output/tree_rm_gymn", recursive = TRUE, showWarnings = FALSE)
 
 # Run model fitting with multiple seeds
+make_tree = TRUE
+# If make_tree = TRUE: generate a new phylogenetic tree.
+# If make_tree = FALSE: load a saved tree from tree_path.
 rslt_aic_all_rm_gymn <- pbmclapply(1:100, function(i) {
-  phy <- edit_new_rep(input_glm_rm_gymn, zanne, seed = i)
-  phyloglm_exh_test(input_glm_rm_gymn, phy, col_tr)
+  tree_path <- sprintf("./output/tree_rm_gymn/phy_%03d.rds", i)
+  if (make_tree) {
+    phy <- edit_new_rep(input_glm_rm_gymn, zanne, seed = i)
+    saveRDS(phy, tree_path)
+  } else {
+    phy <- readRDS(tree_path)
+  }
+  phyloglm_exh(input_glm_rm_gymn, phy, col_tr_filtered)
 }, mc.cores = 4)
+saveRDS(rslt_aic_all_rm_gymn, "./output/glm_result_rm_gymn.rds")
 
 # Calculate summary statistics (mean and median AIC) for each model
+rslt_aic_all_rm_gymn <- readRDS("./output/glm_result_rm_gymn.rds")
 rslt_aic_sum_rm_gymn = mkdf(rslt_aic_all_rm_gymn) %>% 
   group_by(model) %>% 
   summarise(mean = mean(AIC), median = median(AIC))
@@ -72,7 +87,7 @@ rslt_coef_all_rm_gymn = pbmclapply(1:100, function(i) {
   phy = edit_new_rep(input_glm_rm_gymn, zanne, seed = i)
   
   # Fit a phylogenetic logistic regression model using the selected traits
-  rslt = phyloglm(input_glm_rm_gymn$pattern_cp ~ H + LA + LeafN + LMA + SCD,
+  rslt = phyloglm(input_glm_rm_gymn$pattern_cp ~ H + LA + LeafN + LNA + SCD,
                   data = input_glm_rm_gymn,
                   phy = phy,
                   method = c("logistic_MPLE","logistic_IG10", "poisson_GEE"),

@@ -91,7 +91,7 @@ make_group_info = function(df_TRY, df_phylo_info, df_sample, df_replace_family, 
     mutate(Family_lower = tolower(family)) %>%
     left_join(df_replace_family, by = c("Family_lower" = "Family")) %>%
     mutate(Family_replace = ifelse(is.na(replacement), Family_lower, replacement),
-           Group = cotyledon2) %>%
+           Group = cotyledon) %>%
     select(Family_replace, Group) %>%
     distinct(Family_replace, .keep_all = TRUE)
   colnames(group_smpl)[1] = "Family"
@@ -114,7 +114,7 @@ extract_numeric_trait = function(df_TRY) {
   
   # Filter and process the data frame to extract numeric traits
   df_numeric_trait = df_TRY %>%
-    select(AccSpeciesName, AccSpeciesID, TraitID, TraitName, DataName, OriglName, OrigValueStr, OrigUnitStr, ValueKindName, Reference, Comment) %>%
+    select(AccSpeciesName, AccSpeciesID, TraitID, TraitName, DataName, OriglName, OrigValueStr, OrigUnitStr, ValueKindName) %>%
     filter(!is.na(TraitID), !is.na(OrigValueStr), !is.na(OriglName), isNumeric(OrigValueStr)) %>%
     arrange(TraitID, OriglName, AccSpeciesName) %>% 
     mutate(OrigValueNum = as.numeric(OrigValueStr))
@@ -126,11 +126,11 @@ extract_numeric_trait = function(df_TRY) {
 # Calculate the ratio of missing values (NA) for each trait cross species --------
 
 
-calc_na_ratio = function(df_numeric_trait, df_phylo_info, df_group, trait_list){
+calc_na_ratio = function(df_numeric_trait, df_phylo_info, df_group, trait_list, na_threshold = 0.95){
   # Merge data frames to incorporate phylogenetic and group information
   df_tmp = df_numeric_trait %>%
     inner_join(df_phylo_info, by = "AccSpeciesName") %>%
-    inner_join(df_group, by = "Family") %>% 
+    inner_join(df_group, by = "Family") %>%
     select(AccSpeciesName, Family, Genus, Group, TraitID, OrigValueNum) 
   
   # Filter the data to retain only the specified traits
@@ -138,10 +138,21 @@ calc_na_ratio = function(df_numeric_trait, df_phylo_info, df_group, trait_list){
   
   # Reshape the data into a wide format for NA calculation
   df_calc = df_tmp %>% 
-    pivot_wider(names_from = TraitID, values_from = OrigValueNum, values_fill = NULL, values_fn = mean) 
+    pivot_wider(names_from = TraitID, values_from = OrigValueNum, values_fill = NULL, values_fn = mean)
+  trait_map = setNames(names(trait_list), as.character(unlist(trait_list)))  
+  current_names <- names(df_calc)
+  new_names <- trait_map[ as.character(current_names) ]
+  new_names[ is.na(new_names) ] <- current_names[ is.na(new_names) ]
+  names(df_calc) <- new_names
   
   # Calculate NA ratio for each column
-  colMeans(is.na(df_calc))
+  na_ratio <- colMeans(is.na(df_calc[ names(trait_list) ])) %>% sort(decreasing = FALSE)
+  print(na_ratio)
+  
+  # Select traits with NA ratios below the threshold
+  selected_traits <- names(na_ratio)[ na_ratio <= na_threshold ]
+  
+  return(trait_list[selected_traits])
 }
 
 
@@ -176,10 +187,18 @@ filter_trait_record = function(df_numeric_trait, trait_list, trait_name, df_rm_D
   rm_filter = df_rm_Dataname %>% 
     filter(TraitID == trait_id)
   df_unit_conv_filter = df_unit_conv %>% 
-    filter(trait == trait_name)
+    filter(trait == trait_name) %>%
+    mutate(unit = ifelse(is.na(unit), "", unit))
   
   # Filter and convert data
-  df_trait$OrigUnitStr = ifelse(is.na(df_trait$OrigUnitStr), "nounit", df_trait$OrigUnitStr)
+  df_trait <- df_trait %>%
+    mutate(
+      OrigUnitStr = ifelse(is.na(OrigUnitStr), "nounit", OrigUnitStr),
+      OrigUnitStr = gsub("^\\u0089\\s*", "", OrigUnitStr),
+      OrigUnitStr = gsub("[[:cntrl:]]", "", OrigUnitStr),
+      OrigUnitStr = trimws(OrigUnitStr)
+    )
+  
   df_filtered = df_trait %>%
     filter(!(DataName %in% rm_filter$DataName) & !ValueKindName %in% c("Maximum", "Minimum", "Median")) %>% 
     left_join(df_unit_conv_filter, by = c("OrigUnitStr" = "unit")) %>%
@@ -206,7 +225,7 @@ filter_trait_record = function(df_numeric_trait, trait_list, trait_name, df_rm_D
 # Make hierarchy file for BHPMF from mk_gapdf output ----------------------
 
 
-mean_target_trait = function(df_numeric_trait, trait_list, trait_name, df_rm_Dataname, df_unit_conv, zero.omit = TRUE) {
+mean_target_trait = function(df_numeric_trait, trait_list, df_rm_Dataname, df_unit_conv, zero.omit = TRUE) {
   # Initialize an empty list to store results
   output_list = list()
   
@@ -220,9 +239,16 @@ mean_target_trait = function(df_numeric_trait, trait_list, trait_name, df_rm_Dat
   
   # Calculate the mean value for each trait by species
   df_target_mean = target_rows_conv %>%
-    select(AccSpeciesName, trait, ConvertedValue) %>% 
+    select(AccSpeciesName, trait, ConvertedValue) %>%
     pivot_wider(names_from = trait, values_from = ConvertedValue, values_fill = NULL, values_fn = mean) %>%
     arrange(AccSpeciesName)
+  
+  # Calculate the number of individuals measured for each species for each trait
+  df_target_n = target_rows_conv %>%
+    select(AccSpeciesName, trait, ConvertedValue) %>%
+    pivot_wider(names_from = trait, values_from = ConvertedValue, values_fn = list(ConvertedValue = function(x) sum(!is.na(x)))) %>%
+    arrange(AccSpeciesName)
+  write_csv(df_target_n, './output/individual_count.csv')
   
   return(df_target_mean)
 }
@@ -241,32 +267,41 @@ make_bhpmf_input = function(df_target_mean, df_phylo_info, df_group) {
     arrange(AccSpeciesName) %>%
     mutate(plant_id = row_number())
   
+  # Calculate the ratio of non-missing values for each trait
+  trait_cols = setdiff(colnames(df_target_mean), "AccSpeciesName")
+  na_rate <- colMeans(is.na(df_target_mean_log[trait_cols]))
+  removed_traits <- names(na_rate[na_rate >= 0.95])
+  if (length(removed_traits) > 0) {
+    warning(
+      paste0(
+        "Traits with missing rates higher than 0.95 were removed: ",
+        paste(removed_traits, collapse = ", ")
+      )
+    )
+  }
+  keep_traits <- setdiff(trait_cols, removed_traits)
+  df_filtered <- df_target_mean_log[, c(setdiff(names(df_target_mean_log), trait_cols), keep_traits)]
+  
+  # Remove rows in which all trait columns are NA
+  df_filtered <- df_filtered[rowSums(!is.na(df_filtered[keep_traits])) > 0, ]
+  
   # Check for Inf/-Inf in the log-transformed data
-  if (any(is.infinite(unlist(df_target_mean_log)))) {
+  if (any(is.infinite(unlist(df_filtered)))) {
     cat("The log-transformed data contains Inf or -Inf values.\n")
   } else {
     cat("The log-transformed data does not contain Inf or -Inf values.\n")
   }
   
   # Create a hierarchy data frame with classification information
-  hierarchy.info = df_target_mean_log %>%
+  hierarchy.info = df_filtered %>%
     select(plant_id, AccSpeciesName, Genus, Family, Group) %>% 
     data.frame()
   
   # Prepare a matrix of trait values
-  trait.info = df_target_mean_log %>%
-    select(names(trait_list)) %>%
+  trait.info = df_filtered %>%
+    select(all_of(keep_traits)) %>%
     mutate(across(everything(), ~ ifelse(.x == 0, 0.0000001, .x))) %>%
     as.matrix()
-  
-  # Calculate the ratio of non-missing values for each trait
-  trait_ratio = apply(trait.info, 2, function(x){length(x[!is.na(x)]) / nrow(trait.info)})
-  
-  # Generate a warning if any trait has more than 95% missing data
-  if (any(trait_ratio < 0.05)) {
-    print(trait_ratio)
-    warning("Traits with missing rates higher than 0.95 are included.")
-  }
   
   return(list(trait = trait.info, hierarchy = hierarchy.info))
 }
@@ -292,7 +327,8 @@ make_input_glm = function(df_hierarchy, path_filled_trait, sample, col_trait, tr
   
   # Assign gap-filled traits to the sample and preprocess variables
   sample_gapfilled = sample %>%
-    inner_join(df_gapfilled, by = "AccSpeciesName") %>% 
+    inner_join(df_gapfilled, by = c("species_try" = "AccSpeciesName")) %>%
+    rename(AccSpeciesName = species_try) %>% 
     select(AccSpeciesName, pattern_cp, Genus, Family, Group, col_trait) %>%
     mutate(pattern_cp = str_replace_all(pattern_cp, pattern = c("B/M" = "1", "B" = "1", "RP" = "1", "P" = "1", "M" = "0")),
            PG = str_replace_all(Group, pattern = c("Eudicot" = "1", "dicot" = "1", "Monocot" = "1", "Gymnosperm" = "0"))) %>%
@@ -392,7 +428,6 @@ edit_new_rep <- function(input, phy, seed) {
       print("Genus which have no species in samples were detected.")
     }
   }
-  
   # Return the modified phylogenetic tree by reading the edited Newick string
   return(read.tree(text = zanne_prune_new))
 }
@@ -409,7 +444,7 @@ phyloglm_exh <- function(input, phy, trait) {
     cmb <- combinations(n = length(trait), r = r, v = trait, repeats.allowed = FALSE)
     
     # Perform phylogenetic logistic regression for each combination in parallel
-    results <- mclapply(1:nrow(cmb), function(m) {
+    results <- lapply(1:nrow(cmb), function(m) {
       # Select the current combination of traits and create an input data frame
       input_edit <- select(input, pattern_cp, cmb[m, ])
       # Set row names to match the species names in the phylogenetic tree
@@ -431,7 +466,7 @@ phyloglm_exh <- function(input, phy, trait) {
       mdl <- str_flatten(cmb[m, ], collapse = " + ")
       # Return a data frame with the model identifier and its AIC value
       return(data.frame(model = mdl, AIC = result$aic, stringsAsFactors = FALSE))
-    }, mc.cores = detectCores() - 1)
+    })
     
     # Combine the results from the current iteration with the overall results
     df_AIC <- bind_rows(df_AIC, do.call(rbind, results))

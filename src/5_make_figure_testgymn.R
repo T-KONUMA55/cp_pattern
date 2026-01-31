@@ -15,18 +15,18 @@ p <- ggplot(rslt_aic_top5_rm_gymn,
   geom_boxplot(width = 0.1, position = position_dodge(width = 0.9), 
                outlier.shape = NA, fill = "black", color = "black", alpha = 1) +
   stat_summary(fun = median, geom = "point", fill = "white", shape = 21, size = 2.5) +
-  scale_x_discrete(limits = c("H + LA + LeafN + LMA + SCD",
-                              "H + LA + LeafN + LNA + SCD",
-                              "LA + LeafN + LMA",
-                              "LA + LeafN + LNA + SCD",
-                              "H + LA + LDMC + LeafN + LNA + SCD"), 
-                   labels = c("H + LA + LeafN +\n LMA + SCD",
-                              "H + LA + LeafN +\n LNA + SCD",
-                              "LA + LeafN + LMA",
-                              "LA + LeafN +\n LNA + SCD",
-                              "H + LA + LDMC +\n LeafN + LNA + SCD")
+  scale_x_discrete(limits = c("H + LA + LeafN + LNA + SCD",
+                              "H + LA + LNA + SCD",
+                              "H + LA + LMA + LNA + SCD",
+                              "H + LA + LMA + LNA + SCD + SSD",
+                              "LA + LDMC + LeafN + LMA"), 
+                   labels = c("H + LA + LeafN +\n LNA + SCD",
+                              "H + LA +\n LNA + SCD",
+                              "H + LA + LMA +\n LNA + SCD",
+                              "H + LA + LMA +\n LNA + SCD + SSD",
+                              "LA + LDMC +\n LeafN + LMA")
   ) +
-  scale_y_continuous(limits = c(255, 265)) +
+  scale_y_continuous(limits = c(260, 270)) +
   ylab("AIC") +
   theme(
     axis.text.x = element_text(size = 18, angle = 45, hjust = 1),
@@ -50,7 +50,7 @@ theme_set(theme_classic(base_size = 18, base_family = "Helvetica"))
 # Create violin plot with box plot overlay
 p <- ggplot(filter(rslt_coef_top_rm_gymn, trait != "(Intercept)"), aes(x = trait, y = coefficient)) +
   geom_violin(trim = FALSE, alpha = 0.7, fill = "lightgray") +
-  geom_boxplot(width = 0.1, position = position_dodge(width = 0.9),
+  geom_boxplot(width = 0.05, position = position_dodge(width = 0.9),
                outlier.shape = NA, fill = "black", color = "black", alpha = 1) +
   stat_summary(fun = median, geom = "point", fill = "white", shape = 21, size = 2.5) +
   geom_hline(yintercept = 0, linetype = "dotted") +

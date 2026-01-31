@@ -3,13 +3,17 @@ library(tidyverse)
 library(ggplot2)
 
 
+# Ensure directory exists -------------------------------------------------
+
+dir.create("./output/plot", recursive = TRUE, showWarnings = FALSE)
+
 # Write phylogenetic tree of sample ---------------------------------------------
 
 # Filter the phylogenetic tree to include only species present in `input_glm`
 zanne_filtered = drop.tip(zanne, setdiff(zanne$tip.label, rownames(input_glm)))
 
 # Save the plot as a PNG file
-png("phylo_tree.png",
+png("./output/plot/phylo_tree.png",
     width = 1840,
     height = 1840,
     )
@@ -89,18 +93,18 @@ p <- ggplot(rslt_aic_top5,
   geom_boxplot(width = 0.1, position = position_dodge(width = 0.9),
                outlier.shape = NA, fill = "black", color = "black", alpha = 1) +
   stat_summary(fun = median, geom = "point", fill = "white", shape = 21, size = 2.5) +
-  scale_x_discrete(limits = c("H + LA + LeafN + SCD",
-                              "LA + LeafN",
-                              "LA + LMA + LNA",
+  scale_x_discrete(limits = c("H + LA + LNP + SCD",
+                              "H + LA + LeafN + LNP + SCD",
+                              "H + LA + LeafP + LNP + SCD",
                               "H + LA + LeafN + LeafP + SCD",
-                              "H + LA + LeafN + LeafP"), 
-                   labels = c("H + LA +\n LeafN + SCD",
-                              "LA + LeafN",
-                              "LA + LMA + LNA",
+                              "H + LA + LNA + LNP + SCD"), 
+                   labels = c("H + LA +\n LNP + SCD",
+                              "H + LA + LeafN +\n LNP + SCD",
+                              "H + LA + LeafP +\n LNP + SCD",
                               "H + LA + LeafN +\n LeafP + SCD",
-                              "H + LA +\n LeafN + LeafP")
+                              "H + LA + LNA +\n LNP + SCD")
                    ) +
-  scale_y_continuous(limits = c(265, 275)) +
+  scale_y_continuous(limits = c(268, 273)) +
   ylab("AIC") +
   theme(
     axis.text.x = element_text(size = 18, angle = 45, hjust = 1),
@@ -114,7 +118,7 @@ print(p)
 
 # Save the plot as a PNG file
 ggsave(filename = "output/plot/aic_violin_box_all.png", plot = p, width = 8.9, height = 6, dpi = 600)
-
+ 
 
 # Plot coefficient distribution -------------------------------------------------------------
 
@@ -124,7 +128,7 @@ theme_set(theme_classic(base_size = 18, base_family = "Helvetica"))
 # Create violin plot with box plot overlay
 p <- ggplot(filter(rslt_coef_top, trait != "(Intercept)"), aes(x = trait, y = coefficient)) +
   geom_violin(trim = FALSE, alpha = 0.7, fill = "lightgray") +
-  geom_boxplot(width = 0.1, position = position_dodge(width = 0.9),
+  geom_boxplot(width = 0.05, position = position_dodge(width = 0.9),
                outlier.shape = NA, fill = "black", color = "black", alpha = 1) +
   stat_summary(fun = median, geom = "point", fill = "white", shape = 21, size = 2.5) +
   geom_hline(yintercept = 0, linetype = "dotted") +

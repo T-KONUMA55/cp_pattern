@@ -8,7 +8,7 @@ source("src/utils.R")
 input_glm = read_csv("output/input_glm.csv")
 
 # Select trait columns for correlation analysis
-col_tr = colnames(input_glm)[!(colnames(input_glm) %in% c("AccSpeciesName", "pattern_cp", "pollen", "Genus", "Family", "Group", "PG", "d15N"))]
+col_tr = colnames(input_glm)[!(colnames(input_glm) %in% c("AccSpeciesName", "pattern_cp", "pollen", "Genus", "Family", "Group", "PG"))]
 
 # Read the phylogenetic tree data (Zanne et al., 2014)
 zanne = read.tree("input/zanne2014.new")
@@ -30,19 +30,34 @@ corrplot(cor(input_glm %>% select(col_tr)),
                        addcolorlabel = "no", 
                        order = "AOE") 
 
+# Remove traits whose correlation coefficient is 0.8 or higher
+col_tr_filtered <- col_tr[col_tr != "DL"]
+
 # Perform Regression Analysis ------------------------------------------------
 
 
 # Get the number of physical cores (ignoring logical/virtual cores)
 detectCores(logical = FALSE)
+dir.create("./output/tree", recursive = TRUE, showWarnings = FALSE)
 
 # Run model fitting with multiple seeds
+make_tree = TRUE
+# If make_tree = TRUE: generate a new phylogenetic tree.
+# If make_tree = FALSE: load a saved tree from tree_path.
 rslt_aic_all <- pbmclapply(1:100, function(i) {
-  phy <- edit_new_rep(input_glm, zanne, seed = i)
-  phyloglm_exh(input_glm, phy, col_tr)
+  tree_path <- sprintf("./output/tree/phy_%03d.rds", i)
+  if (make_tree) {
+    phy <- edit_new_rep(input_glm, zanne, seed = i)
+    saveRDS(phy, tree_path)
+  } else {
+    phy <- readRDS(tree_path)
+  }
+  phyloglm_exh(input_glm, phy, col_tr_filtered)
 }, mc.cores = 4)
+saveRDS(rslt_aic_all, "./output/glm_result.rds")
 
 # Calculate summary statistics (mean and median AIC) for each model
+rslt_aic_all <- readRDS("./output/glm_result.rds")
 rslt_aic_sum = mkdf(rslt_aic_all) %>% 
   group_by(model) %>% 
   summarise(mean = mean(AIC), median = median(AIC))
@@ -65,11 +80,12 @@ rownames(input_glm) = str_replace_all(input_glm$AccSpeciesName, pattern = " ", r
 
 # Perform phylogenetic logistic regression for 100 iterations with parallel processing
 rslt_coef_all = pbmclapply(1:100, function(i) {
-  # Create a new phylogenetic tree by randomly selecting one species per genus
-  phy = edit_new_rep(input_glm, zanne, seed = i)
+  # Load a saved tree from tree_path
+  tree_path <- sprintf("./output/tree/phy_%03d.rds", i)
+  phy <- readRDS(tree_path)
   
   # Fit a phylogenetic logistic regression model using the selected traits
-  rslt = phyloglm(input_glm$pattern_cp ~ H + LA + LeafN + SCD,
+  rslt = phyloglm(input_glm$pattern_cp ~ H + LA + LNP + SCD,
                   data = input_glm,
                   phy = phy,
                   method = c("logistic_MPLE","logistic_IG10", "poisson_GEE"),
